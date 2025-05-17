@@ -1,0 +1,178 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:scaleType="fitCenter"
+        android:background="#DDDDDD" />
+
+    <!-- Nhóm nút Filter -->
+    <RadioGroup
+        android:id="@+id/filterGroup"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="12dp">
+
+        <RadioButton
+            android:id="@+id/filterSketch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sketch" />
+
+        <RadioButton
+            android:id="@+id/filterEmboss"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Emboss" />
+
+        <RadioButton
+            android:id="@+id/filterVignette"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vignette" />
+        <RadioButton
+            android:id="@+id/filterPixelate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pixelate" />
+    </RadioGroup>
+
+
+    <LinearLayout
+        android:id="@+id/vignetteControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/txtRadius"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Radius: 0.5" />
+
+        <SeekBar
+            android:id="@+id/seekRadius"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="50" />
+
+        <TextView
+            android:id="@+id/txtStrength"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Strength: 1.0" />
+
+        <SeekBar
+            android:id="@+id/seekStrength"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="300"
+            android:progress="100" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/pixelateOptionsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:padding="8dp">
+
+        <!-- Chọn kích thước khối -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn kích thước khối:"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/blockSizeGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/blockSize5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5" />
+
+            <RadioButton
+                android:id="@+id/blockSize10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10" />
+
+            <RadioButton
+                android:id="@+id/blockSize15"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15" />
+
+            <RadioButton
+                android:id="@+id/blockSize20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="20" />
+
+            <RadioButton
+                android:id="@+id/blockSize25"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="25" />
+        </RadioGroup>
+
+        <!-- Chọn hình dạng -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Chọn hình dạng:"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/blockShapeGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/shapeSquare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hình vuông" />
+
+            <RadioButton
+                android:id="@+id/shapeTriangle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hình tam giác" />
+
+            <RadioButton
+                android:id="@+id/shapeHexagon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hình lục giác" />
+        </RadioGroup>
+    </LinearLayout>
+
+
+    <ImageButton
+        android:id="@+id/btnPickImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:background="@android:color/transparent" />
+</LinearLayout>
