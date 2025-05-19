@@ -1,35 +1,54 @@
 package com.example.dientoandidong;
 
+import android.Manifest;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
+import android.graphics.*;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
+import android.view.View;
 import android.widget.*;
+
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.*;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
+import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int SELECT_IMAGE = 1;
+
     private ImageView imageView;
-    private Bitmap originalBitmap;
-    private RadioGroup filterGroup;
-    private LinearLayout vignetteControls;
-    private LinearLayout pixelateOptionsLayout;
-    private RadioGroup blockSizeGroup,blockShapeGroup;
-    private SeekBar seekRadius, seekStrength;
-    private TextView txtRadius, txtStrength;
+    private LinearLayout bottomSheet;
+    private SeekBar seekBarIntensity, seekBarBrightness, seekBarContrast, seekBarSaturation;
+    private TextView sliderTitle;
+
+    private Bitmap originalBitmap, filteredBitmap, adjustedBitmap;
+    private Mat originalMat;
+
+    private double filterIntensity = 1.0;
+
+    private int selectedFilter = 0; // 0:none, 1:grayscale, 2:sepia, 3:invert
+
+    private RecyclerView filterRecycler;
+    private FilterAdapter filterAdapter;
 
     static {
         if (!OpenCVLoader.initDebug()) {
-            System.loadLibrary("opencv_java4");
+            // Log lỗi OpenCV không load được
         }
     }
 
@@ -37,242 +56,266 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Request quyền
+        requestPermissions();
+
         imageView = findViewById(R.id.imageView);
-        filterGroup = findViewById(R.id.filterGroup);
-        ImageButton btnPickImage = findViewById(R.id.btnPickImage);
+        bottomSheet = findViewById(R.id.bottomSheet);
+        seekBarIntensity = findViewById(R.id.seekBarIntensity);
+        seekBarBrightness = findViewById(R.id.seekBarBrightness);
+        seekBarContrast = findViewById(R.id.seekBarContrast);
+        seekBarSaturation = findViewById(R.id.seekBarSaturation);
+        sliderTitle = findViewById(R.id.sliderTitle);
 
-        // Liên kết các thành phần UI cho Vignette filter
-        seekRadius = findViewById(R.id.seekRadius);
-        seekStrength = findViewById(R.id.seekStrength);
-        txtRadius = findViewById(R.id.txtRadius);
-        txtStrength = findViewById(R.id.txtStrength);
+        findViewById(R.id.btnLoadImage).setOnClickListener(v -> openGallery());
+        findViewById(R.id.btnSaveImage).setOnClickListener(v -> saveImage());
 
-        // Liên kết cho pixelate filter
-        pixelateOptionsLayout = findViewById(R.id.pixelateOptionsLayout);
-        blockSizeGroup = findViewById(R.id.blockSizeGroup);
-        blockShapeGroup = findViewById(R.id.blockShapeGroup);
+        filterRecycler = findViewById(R.id.filterRecycler);
+        filterRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        filterAdapter = new FilterAdapter(getFilterList(), this::onFilterSelected);
+        filterRecycler.setAdapter(filterAdapter);
 
-        // Mở thư viện khi nhấn nút
-        btnPickImage.setOnClickListener(v -> openGallery());
-        // Áp dụng bộ lọc khi người dùng chọn
-        filterGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            applySelectedFilter(checkedId);
-        });
+        // Các thanh trượt chỉnh sửa
+        seekBarIntensity.setOnSeekBarChangeListener(sliderChangeListener);
+        seekBarBrightness.setOnSeekBarChangeListener(sliderChangeListener);
+        seekBarContrast.setOnSeekBarChangeListener(sliderChangeListener);
+        seekBarSaturation.setOnSeekBarChangeListener(sliderChangeListener);
 
-        // Thiết lập listener cho thay đổi kích thước khối pixelate
-        if (blockSizeGroup != null) {
-            blockSizeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-                applyPixelateWithSelectedBlockSize();
-            });
+        resetSliders();
+    }
+
+    private void resetSliders() {
+        seekBarIntensity.setProgress(100);
+        seekBarBrightness.setProgress(100);
+        seekBarContrast.setProgress(100);
+        seekBarSaturation.setProgress(100);
+    }
+
+    private void requestPermissions() {
+        String[] perms = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        List<String> permsToRequest = new ArrayList<>();
+        for (String perm : perms) {
+            if (ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
+                permsToRequest.add(perm);
+            }
+        }
+        if (!permsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permsToRequest.toArray(new String[0]), 100);
         }
     }
 
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        startActivityForResult(Intent.createChooser(intent, "Chọn ảnh"), PICK_IMAGE_REQUEST);
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, SELECT_IMAGE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri imageUri = data.getData();
+        if (resultCode == RESULT_OK && data != null && requestCode == SELECT_IMAGE) {
+            Uri uri = data.getData();
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                originalBitmap = bitmap;  // gán cho biến toàn cục để filter dùng
-                imageView.setImageBitmap(bitmap); // hiển thị ảnh gốc lên ImageView
+                originalBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                adjustedBitmap = filteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+                imageView.setImageBitmap(originalBitmap);
+
+                // Chuyển Bitmap sang Mat để xử lý OpenCV
+                originalMat = new Mat();
+                Utils.bitmapToMat(originalBitmap, originalMat);
+                Imgproc.cvtColor(originalMat, originalMat, Imgproc.COLOR_RGBA2BGR);
+
+                selectedFilter = 0;
+                filterIntensity = 1.0;
+                bottomSheet.setVisibility(View.GONE);
+
+                resetSliders();
+
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(this, "Không thể tải ảnh", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void applySelectedFilter(int selectedId) {
-        if (originalBitmap == null) return;
+    private List<FilterItem> getFilterList() {
+        List<FilterItem> list = new ArrayList<>();
+        list.add(new FilterItem(0, "None"));
+        list.add(new FilterItem(1, "Grayscale"));
+        list.add(new FilterItem(2, "Sepia"));
+        list.add(new FilterItem(3, "Invert"));
+        return list;
+    }
 
-        try {
-            // Hide all control layouts by default
-            if (vignetteControls != null) {
-                vignetteControls.setVisibility(View.GONE);
-            }
-            if (pixelateOptionsLayout != null) {
-                pixelateOptionsLayout.setVisibility(View.GONE);
-            }
+    private void onFilterSelected(FilterItem filter) {
+        selectedFilter = filter.id;
+        filterIntensity = 1.0;
+        resetSliders();
 
-            // Apply the appropriate filter based on selection
-            if (selectedId == R.id.filterSketch) {
-                Bitmap sketchBitmap = ImageFilters.applySketchFilter(originalBitmap);
-                imageView.setImageBitmap(sketchBitmap);
-            }
-            else if (selectedId == R.id.filterEmboss) {
-                Bitmap embossBitmap = ImageFilters.applyEmbossFilter(originalBitmap);
-                imageView.setImageBitmap(embossBitmap);
-            }
-            else if (selectedId == R.id.filterVignette) {
-                setupVignetteControls();
-            }
-            else if (selectedId == R.id.filterPixelate) {
-                setupPixelateControls();
-            }
-        } catch (Exception e) {
-            Log.e("FilterApp", "Error applying filter: " + e.getMessage(), e);
-            // Optional: Show error message to user
-            // Toast.makeText(this, "Error applying filter", Toast.LENGTH_SHORT).show();
+        if (selectedFilter == 0) {
+            bottomSheet.setVisibility(View.GONE);
+            imageView.setImageBitmap(originalBitmap);
+            filteredBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true);
+            adjustedBitmap = filteredBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        } else {
+            bottomSheet.setVisibility(View.VISIBLE);
+            sliderTitle.setText(filter.name + " - Intensity");
+            applyFilters();
         }
     }
 
-    /**
-     * Set up the pixelate controls and listeners
-     */
-    private void setupPixelateControls() {
-        // Show controls
-        if (pixelateOptionsLayout != null) {
-            pixelateOptionsLayout.setVisibility(View.VISIBLE);
-        }
-
-        // Check default radio button if none selected
-        if (blockSizeGroup.getCheckedRadioButtonId() == -1) {
-            // Set default block size
-            RadioButton defaultBlockSize = findViewById(R.id.blockSize10);
-            if (defaultBlockSize != null) {
-                defaultBlockSize.setChecked(true);
-            }
-        }
-
-        // Apply pixelate with current selection
-        applyPixelateWithSelectedBlockSize();
-    }
-
-    /**
-     * Apply pixelate filter with currently selected block size
-     */
-    private void applyPixelateWithSelectedBlockSize() {
-        if (originalBitmap == null || blockSizeGroup == null) return;
-
-        // Get selected block size
-        int blockSize = 10;
-        // Default
-        int selectedId = blockSizeGroup.getCheckedRadioButtonId();
-
-        if (selectedId == R.id.blockSize5) {
-            blockSize = 5;
-        } else if (selectedId == R.id.blockSize10) {
-            blockSize = 10;
-        } else if (selectedId == R.id.blockSize15) {
-            blockSize = 15;
-        }else if (selectedId == R.id.blockSize20) {
-            blockSize = 20;
-        } else if (selectedId == R.id.blockSize25) {
-            blockSize = 25;
-        }
-
-
-        // --- Lấy hình dạng khối từ lựa chọn ---
-        ImageFilters.BlockShape shape = ImageFilters.BlockShape.SQUARE; // Default
-        int selectedShapeId = blockShapeGroup.getCheckedRadioButtonId();
-        if (selectedShapeId == R.id.shapeSquare) {
-            shape = ImageFilters.BlockShape.SQUARE;
-        } else if (selectedShapeId == R.id.shapeTriangle) {
-            shape = ImageFilters.BlockShape.TRIANGLE;
-        } else if (selectedShapeId == R.id.shapeHexagon) {
-            shape = ImageFilters.BlockShape.HEXAGON;
-        }
-
-        // Apply pixelate filter with square blocks
-        Bitmap pixelatedBitmap = ImageFilters.applyPixelateFilter(originalBitmap, blockSize, shape);
-
-        // Update image view
-        if (pixelatedBitmap != null) {
-            imageView.setImageBitmap(pixelatedBitmap);
-        }
-    }
-
-    /**
-     * Set up the vignette controls and listeners
-     */
-    private void setupVignetteControls() {
-        // Initialize vignette controls if needed
-        if (vignetteControls == null) {
-            vignetteControls = findViewById(R.id.vignetteControls);
-        }
-
-        // Show controls
-        vignetteControls.setVisibility(View.VISIBLE);
-
-        // Apply initial vignette effect
-        applyVignetteWithCurrentValues();
-
-        // Set up radius seekbar listener
-        if (seekRadius != null) {
-            seekRadius.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    updateRadiusDisplay(progress / 100.0f);
-                    if (fromUser) {
-                        applyVignetteWithCurrentValues();
-                    }
+    private final SeekBar.OnSeekBarChangeListener sliderChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (fromUser) {
+                if (seekBar == seekBarIntensity) {
+                    filterIntensity = progress / 100.0;
                 }
-
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-            });
+                applyFilters();
+            }
         }
 
-        // Set up strength seekbar listener
-        if (seekStrength != null) {
-            seekStrength.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    updateStrengthDisplay(progress / 100.0f);
-                    if (fromUser) {
-                        applyVignetteWithCurrentValues();
-                    }
-                }
+        @Override public void onStartTrackingTouch(SeekBar seekBar) { }
+        @Override public void onStopTrackingTouch(SeekBar seekBar) { }
+    };
 
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-            });
+    private void applyFilters() {
+        if (originalMat == null || originalBitmap == null) return;
+
+        // Áp filter OpenCV
+        Mat filteredMat;
+        switch (selectedFilter) {
+            case 1:
+                filteredMat = FilterProcessor.applyGrayscale(originalMat, filterIntensity);
+                break;
+            case 2:
+                filteredMat = FilterProcessor.applySepia(originalMat, filterIntensity);
+                break;
+            case 3:
+                filteredMat = FilterProcessor.applyInvert(originalMat, filterIntensity);
+                break;
+            default:
+                filteredMat = originalMat.clone();
+        }
+
+        filteredBitmap = Bitmap.createBitmap(filteredMat.cols(), filteredMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(filteredMat, filteredBitmap);
+
+        // Áp chỉnh sáng, tương phản, bão hòa
+        float brightness = (seekBarBrightness.getProgress() - 100) * 255f / 100f; // -255 to +255
+        float contrast = seekBarContrast.getProgress() / 100f; // 0..2 (default 1)
+        float saturation = seekBarSaturation.getProgress() / 100f; // 0..2 (default 1)
+
+        adjustedBitmap = applyBrightnessContrastSaturation(filteredBitmap, brightness, contrast, saturation);
+        imageView.setImageBitmap(adjustedBitmap);
+    }
+
+    private Bitmap applyBrightnessContrastSaturation(Bitmap bmp, float brightness, float contrast, float saturation) {
+        ColorMatrix cm = new ColorMatrix();
+
+        // Contrast
+        float scale = contrast;
+        float translate = (-0.5f * scale + 0.5f) * 255f;
+        ColorMatrix contrastMatrix = new ColorMatrix(new float[]{
+                scale, 0, 0, 0, translate,
+                0, scale, 0, 0, translate,
+                0, 0, scale, 0, translate,
+                0, 0, 0, 1, 0
+        });
+
+        cm.postConcat(contrastMatrix);
+
+        // Brightness
+        ColorMatrix brightnessMatrix = new ColorMatrix(new float[]{
+                1, 0, 0, 0, brightness,
+                0, 1, 0, 0, brightness,
+                0, 0, 1, 0, brightness,
+                0, 0, 0, 1, 0
+        });
+        cm.postConcat(brightnessMatrix);
+
+        // Saturation
+        ColorMatrix saturationMatrix = new ColorMatrix();
+        saturationMatrix.setSaturation(saturation);
+        cm.postConcat(saturationMatrix);
+
+        Bitmap ret = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(ret);
+        Paint paint = new Paint();
+        paint.setColorFilter(new ColorMatrixColorFilter(cm));
+        canvas.drawBitmap(bmp, 0, 0, paint);
+        return ret;
+    }
+
+    private void saveImage() {
+        if (adjustedBitmap == null) {
+            Toast.makeText(this, "Không có ảnh để lưu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String savedURL = MediaStore.Images.Media.insertImage(getContentResolver(), adjustedBitmap, "FilteredImage", "Image edited by app");
+        if (savedURL != null) {
+            Toast.makeText(this, "Đã lưu ảnh", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Lưu ảnh thất bại", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * Update the radius display with formatted value
-     */
-    private void updateRadiusDisplay(float radius) {
-        if (txtRadius != null) {
-            txtRadius.setText("Radius: " + String.format("%.2f", radius));
+    // Adapter filter đơn giản
+    static class FilterItem {
+        int id;
+        String name;
+
+        FilterItem(int id, String name) {
+            this.id = id;
+            this.name = name;
         }
     }
 
-    /**
-     * Update the strength display with formatted value
-     */
-    private void updateStrengthDisplay(float strength) {
-        if (txtStrength != null) {
-            txtStrength.setText("Strength: " + String.format("%.2f", strength));
-        }
+    interface OnFilterClick {
+        void onClick(FilterItem item);
     }
+    static class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder> {
+        List<FilterItem> filters;
+        OnFilterClick listener;
 
-    /**
-     * Apply vignette filter with current seekbar values
-     */
-    private void applyVignetteWithCurrentValues() {
-        if (originalBitmap == null) return;
+        FilterAdapter(List<FilterItem> filters, OnFilterClick listener) {
+            this.filters = filters;
+            this.listener = listener;
+        }
 
-        // Get current values from seekbars
-        float radius = (seekRadius != null) ? seekRadius.getProgress() / 100.0f : 0.5f;
-        float strength = (seekStrength != null) ? seekStrength.getProgress() / 100.0f : 1.0f;
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            // Sử dụng LayoutInflater để tạo nút từ XML
+            Button btn = new Button(parent.getContext());
+            RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(250, ViewGroup.LayoutParams.MATCH_PARENT);
+            btn.setLayoutParams(params);git fetch origin
+            btn.setAllCaps(false);
+            btn.setTextSize(14f);
+            btn.setTextColor(Color.WHITE);
+            btn.setBackgroundColor(Color.parseColor("#3F51B5")); // màu xanh
+            btn.setPadding(10, 10, 10, 10);
+            return new ViewHolder(btn);
+        }
 
-        // Apply vignette filter
-        Bitmap filteredBitmap = ImageFilters.applyVignetteFilter(originalBitmap, radius, strength);
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            FilterItem item = filters.get(position);
+            Button btn = (Button) holder.itemView;
+            btn.setText(item.name);
+            btn.setOnClickListener(v -> listener.onClick(item));
+        }
 
-        // Update image view
-        if (filteredBitmap != null) {
-            imageView.setImageBitmap(filteredBitmap);
+        @Override
+        public int getItemCount() {
+            return filters.size();
+        }
+
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            ViewHolder(View itemView) {
+                super(itemView);
+            }
         }
     }
 }

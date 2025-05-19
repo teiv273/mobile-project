@@ -1,17 +1,53 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml:2:1-4:12
-INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml:2:1-4:12
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:3:1-12:12
+INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:3:1-12:12
 	package
-		ADDED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml:3:7-27
-		INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:4:7-27
+		INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml
 	xmlns:android
-		ADDED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml:2:11-69
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:3:11-69
+uses-permission#android.permission.CAMERA
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:5:5-65
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:5:22-62
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:6:5-80
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:6:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:7:5-81
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:7:22-78
+uses-feature#android.hardware.camera
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:8:5-84
+	android:required
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:8:58-82
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:8:19-57
+uses-feature#android.hardware.camera.autofocus
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:9:5-94
+	android:required
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:9:68-92
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:9:19-67
+uses-feature#android.hardware.camera.front
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:10:5-90
+	android:required
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:10:64-88
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:10:19-63
+uses-feature#android.hardware.camera.front.autofocus
+ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:11:5-100
+	android:required
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:11:74-98
+	android:name
+		ADDED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:11:19-73
 uses-sdk
-INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml
-INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml
+INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml
+INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml
 	android:targetSdkVersion
-		INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml
+		INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from C:\Users\pduc0\AndroidStudioProjects\DienToanDiDong\OpenCVLibrary\java\AndroidManifest.xml
+		INJECTED from /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml

@@ -7,6 +7,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        vectorDrawables.useSupportLibrary = true
         applicationId = "com.example.dientoandidong"
         minSdk = 29
         targetSdk = 35
@@ -38,7 +39,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(project(":OpenCVLibrary"))
-    implementation(project(":OpenCVLibrary"))
+    implementation ("com.google.android.material:material:1.12.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

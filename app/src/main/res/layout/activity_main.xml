@@ -1,178 +1,124 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#ECEFF1">
 
+    <!-- Nút Load ảnh -->
+    <ImageButton
+        android:id="@+id/btnLoadImage"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="12dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Load Image"
+        android:src="@drawable/ic_load"
+        app:tint="#3F51B5" />
+
+    <!-- Nút Save ảnh -->
+    <ImageButton
+        android:id="@+id/btnSaveImage"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="12dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Save Image"
+        android:src="@drawable/ic_save"
+        app:tint="#3F51B5" />
+
+    <!-- ImageView hiển thị ảnh -->
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_below="@id/btnLoadImage"
+        android:layout_above="@id/filterRecycler"
+        android:layout_margin="12dp"
         android:scaleType="fitCenter"
-        android:background="#DDDDDD" />
+        android:adjustViewBounds="true"
+        android:background="#FFFFFF"
+        android:elevation="4dp" />
 
-    <!-- Nhóm nút Filter -->
-    <RadioGroup
-        android:id="@+id/filterGroup"
-        android:orientation="horizontal"
+    <!-- RecyclerView filter -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/filterRecycler"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="12dp">
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_above="@id/bottomSheet"
+        android:paddingHorizontal="8dp"
+        android:clipToPadding="false"
+        android:background="#3F51B5"
+        android:elevation="6dp" />
 
-        <RadioButton
-            android:id="@+id/filterSketch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sketch" />
-
-        <RadioButton
-            android:id="@+id/filterEmboss"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Emboss" />
-
-        <RadioButton
-            android:id="@+id/filterVignette"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Vignette" />
-        <RadioButton
-            android:id="@+id/filterPixelate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pixelate" />
-    </RadioGroup>
-
-
+    <!-- Bottom sheet chỉnh sửa -->
     <LinearLayout
-        android:id="@+id/vignetteControls"
+        android:id="@+id/bottomSheet"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="220dp"
+        android:layout_alignParentBottom="true"
         android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/txtRadius"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Radius: 0.5" />
-
-        <SeekBar
-            android:id="@+id/seekRadius"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="50" />
-
-        <TextView
-            android:id="@+id/txtStrength"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Strength: 1.0" />
-
-        <SeekBar
-            android:id="@+id/seekStrength"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="300"
-            android:progress="100" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/pixelateOptionsLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="16dp"
         android:visibility="gone"
-        android:padding="8dp">
+        android:elevation="8dp">
 
-        <!-- Chọn kích thước khối -->
+        <TextView
+            android:id="@+id/sliderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter Intensity"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp" />
+
+        <SeekBar
+            android:id="@+id/seekBarIntensity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chọn kích thước khối:"
-            android:textStyle="bold" />
+            android:text="Brightness"
+            android:textColor="#444"
+            android:layout_marginTop="12dp" />
 
-        <RadioGroup
-            android:id="@+id/blockSizeGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <SeekBar
+            android:id="@+id/seekBarBrightness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-            <RadioButton
-                android:id="@+id/blockSize5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5" />
-
-            <RadioButton
-                android:id="@+id/blockSize10"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10" />
-
-            <RadioButton
-                android:id="@+id/blockSize15"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="15" />
-
-            <RadioButton
-                android:id="@+id/blockSize20"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="20" />
-
-            <RadioButton
-                android:id="@+id/blockSize25"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="25" />
-        </RadioGroup>
-
-        <!-- Chọn hình dạng -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Chọn hình dạng:"
-            android:textStyle="bold" />
+            android:text="Contrast"
+            android:textColor="#444"
+            android:layout_marginTop="12dp" />
 
-        <RadioGroup
-            android:id="@+id/blockShapeGroup"
+        <SeekBar
+            android:id="@+id/seekBarContrast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="Saturation"
+            android:textColor="#444"
+            android:layout_marginTop="12dp" />
 
-            <RadioButton
-                android:id="@+id/shapeSquare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hình vuông" />
-
-            <RadioButton
-                android:id="@+id/shapeTriangle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hình tam giác" />
-
-            <RadioButton
-                android:id="@+id/shapeHexagon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hình lục giác" />
-        </RadioGroup>
+        <SeekBar
+            android:id="@+id/seekBarSaturation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
-
-
-    <ImageButton
-        android:id="@+id/btnPickImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp"
-        android:src="@android:drawable/ic_menu_gallery"
-        android:background="@android:color/transparent" />
-</LinearLayout>
+</RelativeLayout>

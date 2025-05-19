@@ -4,4 +4,39 @@
 4
 5    <uses-sdk android:minSdkVersion="21" />
 6
-7</manifest>
+7    <uses-permission android:name="android.permission.CAMERA" />
+7-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:5:5-65
+7-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:5:22-62
+8    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+8-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:6:5-80
+8-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:6:22-77
+9    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+9-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:7:5-81
+9-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:7:22-78
+10
+11    <uses-feature
+11-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:8:5-84
+12        android:name="android.hardware.camera"
+12-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:8:19-57
+13        android:required="false" />
+13-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:8:58-82
+14    <uses-feature
+14-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:9:5-94
+15        android:name="android.hardware.camera.autofocus"
+15-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:9:19-67
+16        android:required="false" />
+16-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:9:68-92
+17    <uses-feature
+17-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:10:5-90
+18        android:name="android.hardware.camera.front"
+18-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:10:19-63
+19        android:required="false" />
+19-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:10:64-88
+20    <uses-feature
+20-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:11:5-100
+21        android:name="android.hardware.camera.front.autofocus"
+21-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:11:19-73
+22        android:required="false" />
+22-->/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/java/AndroidManifest.xml:11:74-98
+23
+24</manifest>
