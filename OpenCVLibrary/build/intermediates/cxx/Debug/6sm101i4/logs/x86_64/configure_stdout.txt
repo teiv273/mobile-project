@@ -12,4 +12,4 @@
 -- Detecting CXX compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/.cxx/Debug/6sm101i4/x86_64
+-- Build files have been written to: /Users/admin/AndroidStudioProjects/sepia/OpenCVLibrary/.cxx/Debug/6sm101i4/x86_64

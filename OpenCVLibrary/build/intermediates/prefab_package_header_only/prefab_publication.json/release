@@ -1,5 +1,5 @@
 {
-  "installationFolder": "/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/build/intermediates/prefab_package/release/prefab",
+  "installationFolder": "/Users/admin/AndroidStudioProjects/sepia/OpenCVLibrary/build/intermediates/prefab_package/release/prefab",
   "gradlePath": ":OpenCVLibrary",
   "packageInfo": {
     "packageName": "OpenCVLibrary",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/native/jni/include",
+        "moduleHeaders": "/Users/admin/AndroidStudioProjects/sepia/OpenCVLibrary/native/jni/include",
         "moduleExportLibraries": [],
         "abis": []
       }

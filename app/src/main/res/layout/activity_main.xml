@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:background="#ECEFF1">
 
-    <!-- Nút Load ảnh -->
     <ImageButton
         android:id="@+id/btnLoadImage"
         android:layout_width="48dp"
@@ -20,7 +19,6 @@
         android:src="@drawable/ic_load"
         app:tint="#3F51B5" />
 
-    <!-- Nút Save ảnh -->
     <ImageButton
         android:id="@+id/btnSaveImage"
         android:layout_width="48dp"
@@ -33,92 +31,95 @@
         android:src="@drawable/ic_save"
         app:tint="#3F51B5" />
 
-    <!-- ImageView hiển thị ảnh -->
+    <LinearLayout
+        android:id="@+id/filterControlsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/filterRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:paddingHorizontal="8dp"
+            android:clipToPadding="false"
+            android:background="#3F51B5"
+            android:elevation="6dp" />
+
+        <LinearLayout
+            android:id="@+id/bottomSheet"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:visibility="gone"
+            android:elevation="8dp">
+
+            <TextView
+                android:id="@+id/sliderTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Filter Intensity"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
+                android:layout_marginBottom="8dp" />
+
+            <SeekBar
+                android:id="@+id/seekBarIntensity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Brightness"
+                android:textColor="#444"
+                android:layout_marginTop="12dp" />
+
+            <SeekBar
+                android:id="@+id/seekBarBrightness"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Contrast"
+                android:textColor="#444"
+                android:layout_marginTop="12dp" />
+
+            <SeekBar
+                android:id="@+id/seekBarContrast"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Saturation"
+                android:textColor="#444"
+                android:layout_marginTop="12dp" />
+
+            <SeekBar
+                android:id="@+id/seekBarSaturation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_below="@id/btnLoadImage"
-        android:layout_above="@id/filterRecycler"
+        android:layout_above="@id/filterControlsContainer"
         android:layout_margin="12dp"
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"
         android:background="#FFFFFF"
         android:elevation="4dp" />
 
-    <!-- RecyclerView filter -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/filterRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_above="@id/bottomSheet"
-        android:paddingHorizontal="8dp"
-        android:clipToPadding="false"
-        android:background="#3F51B5"
-        android:elevation="6dp" />
-
-    <!-- Bottom sheet chỉnh sửa -->
-    <LinearLayout
-        android:id="@+id/bottomSheet"
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical"
-        android:background="#FFFFFF"
-        android:padding="16dp"
-        android:visibility="gone"
-        android:elevation="8dp">
-
-        <TextView
-            android:id="@+id/sliderTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter Intensity"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#333333"
-            android:layout_marginBottom="8dp" />
-
-        <SeekBar
-            android:id="@+id/seekBarIntensity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Brightness"
-            android:textColor="#444"
-            android:layout_marginTop="12dp" />
-
-        <SeekBar
-            android:id="@+id/seekBarBrightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Contrast"
-            android:textColor="#444"
-            android:layout_marginTop="12dp" />
-
-        <SeekBar
-            android:id="@+id/seekBarContrast"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Saturation"
-            android:textColor="#444"
-            android:layout_marginTop="12dp" />
-
-        <SeekBar
-            android:id="@+id/seekBarSaturation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
 </RelativeLayout>

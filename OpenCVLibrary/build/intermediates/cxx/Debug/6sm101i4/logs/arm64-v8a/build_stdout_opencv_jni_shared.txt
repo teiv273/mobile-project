@@ -1,2 +1,2 @@
-ninja: Entering directory `/Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/.cxx/Debug/6sm101i4/arm64-v8a'
+ninja: Entering directory `/Users/admin/AndroidStudioProjects/sepia/OpenCVLibrary/.cxx/Debug/6sm101i4/arm64-v8a'
 ninja: no work to do.

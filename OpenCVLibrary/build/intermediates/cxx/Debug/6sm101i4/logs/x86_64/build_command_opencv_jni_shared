@@ -1,4 +1,4 @@
 /Users/admin/Library/Android/sdk/cmake/3.22.1/bin/ninja \
   -C \
-  /Users/admin/AndroidStudioProjects/mobile-project/OpenCVLibrary/.cxx/Debug/6sm101i4/x86_64 \
+  /Users/admin/AndroidStudioProjects/sepia/OpenCVLibrary/.cxx/Debug/6sm101i4/x86_64 \
   opencv_jni_shared
