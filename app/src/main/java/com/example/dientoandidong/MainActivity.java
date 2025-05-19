@@ -21,11 +21,12 @@ public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private Bitmap originalBitmap;
     private RadioGroup filterGroup;
-    private LinearLayout vignetteControls;
-    private LinearLayout pixelateOptionsLayout;
-    private RadioGroup blockSizeGroup,blockShapeGroup;
-    private SeekBar seekRadius, seekStrength;
-    private TextView txtRadius, txtStrength;
+    private LinearLayout pixelateControls, oilPaintControls;
+    private RadioGroup blockSizeGroup, blockShapeGroup;
+    private RadioGroup radiusGroup, intensityLevelsGroup;
+    private Uri currentImageUri;
+    private SaveImage saveImageHandler;
+    private Bitmap currentFilteredBitmap;
 
     static {
         if (!OpenCVLoader.initDebug()) {
@@ -37,33 +38,97 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize basic UI elements
         imageView = findViewById(R.id.imageView);
         filterGroup = findViewById(R.id.filterGroup);
         ImageButton btnPickImage = findViewById(R.id.btnPickImage);
 
-        // Liên kết các thành phần UI cho Vignette filter
-        seekRadius = findViewById(R.id.seekRadius);
-        seekStrength = findViewById(R.id.seekStrength);
-        txtRadius = findViewById(R.id.txtRadius);
-        txtStrength = findViewById(R.id.txtStrength);
-
-        // Liên kết cho pixelate filter
-        pixelateOptionsLayout = findViewById(R.id.pixelateOptionsLayout);
+        // Initialize pixelate controls
+        pixelateControls = findViewById(R.id.pixelateControls);
         blockSizeGroup = findViewById(R.id.blockSizeGroup);
         blockShapeGroup = findViewById(R.id.blockShapeGroup);
 
-        // Mở thư viện khi nhấn nút
-        btnPickImage.setOnClickListener(v -> openGallery());
-        // Áp dụng bộ lọc khi người dùng chọn
-        filterGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            applySelectedFilter(checkedId);
+        // Initialize oil paint controls
+        oilPaintControls = findViewById(R.id.oilPaintControls);
+        radiusGroup = findViewById(R.id.radiusGroup);
+        intensityLevelsGroup = findViewById(R.id.intensityLevelsGroup);
+
+        // Initialize save image controls
+        ImageButton btnSaveImage = findViewById(R.id.btnSaveImage);
+        LinearLayout saveOptionsContainer = findViewById(R.id.saveOptionsContainer);
+        Button btnSaveAsNew = findViewById(R.id.btnSaveAsNew);
+        Button btnSaveReplacement = findViewById(R.id.btnSaveReplacement);
+
+        // Initialize SaveImage handler with our UI components
+        saveImageHandler = new SaveImage(this, btnSaveImage, saveOptionsContainer,
+                btnSaveAsNew, btnSaveReplacement);
+
+        // Set the bitmap provider to get the current bitmap from MainActivity
+        saveImageHandler.setBitmapProvider(new SaveImage.BitmapProvider() {
+            @Override
+            public Bitmap getCurrentBitmap() {
+                // Return the current filtered bitmap if available, otherwise return the original bitmap
+                return (currentFilteredBitmap != null) ? currentFilteredBitmap : originalBitmap;
+            }
         });
 
-        // Thiết lập listener cho thay đổi kích thước khối pixelate
+        // Set default visibility
+        if (pixelateControls != null) {
+            pixelateControls.setVisibility(View.GONE);
+        }
+        if (oilPaintControls != null) {
+            oilPaintControls.setVisibility(View.GONE);
+        }
+        if (saveOptionsContainer != null) {
+            saveOptionsContainer.setVisibility(View.GONE);
+        }
+
+        // Set up listeners for pixelate block size and shape
         if (blockSizeGroup != null) {
             blockSizeGroup.setOnCheckedChangeListener((group, checkedId) -> {
                 applyPixelateWithSelectedBlockSize();
             });
+        }
+        if (blockShapeGroup != null) {
+            blockShapeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                applyPixelateWithSelectedBlockSize();
+            });
+        }
+        if (radiusGroup != null) {
+            radiusGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                applyOilPaintWithSelectedParameters();
+            });
+        }
+        if (intensityLevelsGroup != null) {
+            intensityLevelsGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                applyOilPaintWithSelectedParameters();
+            });
+        }
+
+        // Mở thư viện khi nhấn nút
+        btnPickImage.setOnClickListener(v -> openGallery());
+
+        // Áp dụng bộ lọc khi người dùng chọn
+        filterGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            // First hide all control panels
+            hideAllControlPanels();
+            // Then apply the selected filter
+            applySelectedFilter(checkedId);
+        });
+    }
+
+    private void hideAllControlPanels() {
+        if (pixelateControls != null) {
+            pixelateControls.setVisibility(View.GONE);
+        }
+        if (oilPaintControls != null) {
+            oilPaintControls.setVisibility(View.GONE);
+        }
+        // Also hide save options when switching filters
+        LinearLayout saveOptionsContainer = findViewById(R.id.saveOptionsContainer);
+        if (saveOptionsContainer != null) {
+            saveOptionsContainer.setVisibility(View.GONE);
         }
     }
 
@@ -80,10 +145,20 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
+            currentImageUri = imageUri;
+
+            // Update the SaveImage handler with the new URI
+            saveImageHandler.setOriginalImageUri(imageUri);
+
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
                 originalBitmap = bitmap;  // gán cho biến toàn cục để filter dùng
+                currentFilteredBitmap = null; // Reset the filtered bitmap
                 imageView.setImageBitmap(bitmap); // hiển thị ảnh gốc lên ImageView
+
+                // Reset filter selection when new image is loaded
+                filterGroup.clearCheck();
+                hideAllControlPanels();
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Không thể tải ảnh", Toast.LENGTH_SHORT).show();
@@ -92,70 +167,69 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applySelectedFilter(int selectedId) {
-        if (originalBitmap == null) return;
+        if (originalBitmap == null) {
+            Toast.makeText(this, "Vui lòng chọn ảnh trước", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         try {
-            // Hide all control layouts by default
-            if (vignetteControls != null) {
-                vignetteControls.setVisibility(View.GONE);
-            }
-            if (pixelateOptionsLayout != null) {
-                pixelateOptionsLayout.setVisibility(View.GONE);
-            }
-
             // Apply the appropriate filter based on selection
             if (selectedId == R.id.filterSketch) {
-                Bitmap sketchBitmap = ImageFilters.applySketchFilter(originalBitmap);
-                imageView.setImageBitmap(sketchBitmap);
-            }
-            else if (selectedId == R.id.filterEmboss) {
-                Bitmap embossBitmap = ImageFilters.applyEmbossFilter(originalBitmap);
-                imageView.setImageBitmap(embossBitmap);
-            }
-            else if (selectedId == R.id.filterVignette) {
-                setupVignetteControls();
-            }
-            else if (selectedId == R.id.filterPixelate) {
+                currentFilteredBitmap = ImageFilters.applySketchFilter(originalBitmap);
+                imageView.setImageBitmap(currentFilteredBitmap);
+            } else if (selectedId == R.id.filterEmboss) {
+                currentFilteredBitmap = ImageFilters.applyEmbossFilter(originalBitmap);
+                imageView.setImageBitmap(currentFilteredBitmap);
+            } else if (selectedId == R.id.filterPixelate) {
                 setupPixelateControls();
+            } else if (selectedId == R.id.filterOilPaint) {
+                setupOilPaintControls();
             }
         } catch (Exception e) {
             Log.e("FilterApp", "Error applying filter: " + e.getMessage(), e);
-            // Optional: Show error message to user
-            // Toast.makeText(this, "Error applying filter", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Lỗi khi áp dụng bộ lọc: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * Set up the pixelate controls and listeners
-     */
     private void setupPixelateControls() {
         // Show controls
-        if (pixelateOptionsLayout != null) {
-            pixelateOptionsLayout.setVisibility(View.VISIBLE);
-        }
+        if (pixelateControls != null) {
+            pixelateControls.setVisibility(View.VISIBLE);
 
-        // Check default radio button if none selected
-        if (blockSizeGroup.getCheckedRadioButtonId() == -1) {
-            // Set default block size
-            RadioButton defaultBlockSize = findViewById(R.id.blockSize10);
-            if (defaultBlockSize != null) {
-                defaultBlockSize.setChecked(true);
+            // Check if there's any selection already, if not set defaults
+            if (blockSizeGroup.getCheckedRadioButtonId() == -1) {
+                // Set default block size
+                RadioButton defaultBlockSize = findViewById(R.id.blockSize10);
+                if (defaultBlockSize != null) {
+                    defaultBlockSize.setChecked(true);
+                }
             }
-        }
 
-        // Apply pixelate with current selection
-        applyPixelateWithSelectedBlockSize();
+            if (blockShapeGroup.getCheckedRadioButtonId() == -1) {
+                // Set default block shape
+                RadioButton defaultShape = findViewById(R.id.shapeSquare);
+                if (defaultShape != null) {
+                    defaultShape.setChecked(true);
+                }
+            }
+
+            // Apply pixelate with current selections
+            applyPixelateWithSelectedBlockSize();
+        } else {
+            Toast.makeText(this, "Không tìm thấy pixelate controls trong layout", Toast.LENGTH_SHORT).show();
+            Log.e("FilterApp", "pixelateControls is null. Make sure it's defined in your layout.");
+        }
     }
 
-    /**
-     * Apply pixelate filter with currently selected block size
-     */
     private void applyPixelateWithSelectedBlockSize() {
-        if (originalBitmap == null || blockSizeGroup == null) return;
+        if (originalBitmap == null) return;
+        if (blockSizeGroup == null || blockShapeGroup == null) {
+            Log.e("FilterApp", "Block size or shape group is null");
+            return;
+        }
 
         // Get selected block size
-        int blockSize = 10;
-        // Default
+        int blockSize = 10; // Default
         int selectedId = blockSizeGroup.getCheckedRadioButtonId();
 
         if (selectedId == R.id.blockSize5) {
@@ -164,14 +238,13 @@ public class MainActivity extends AppCompatActivity {
             blockSize = 10;
         } else if (selectedId == R.id.blockSize15) {
             blockSize = 15;
-        }else if (selectedId == R.id.blockSize20) {
+        } else if (selectedId == R.id.blockSize20) {
             blockSize = 20;
         } else if (selectedId == R.id.blockSize25) {
             blockSize = 25;
         }
 
-
-        // --- Lấy hình dạng khối từ lựa chọn ---
+        // Get selected block shape
         ImageFilters.BlockShape shape = ImageFilters.BlockShape.SQUARE; // Default
         int selectedShapeId = blockShapeGroup.getCheckedRadioButtonId();
         if (selectedShapeId == R.id.shapeSquare) {
@@ -182,97 +255,89 @@ public class MainActivity extends AppCompatActivity {
             shape = ImageFilters.BlockShape.HEXAGON;
         }
 
-        // Apply pixelate filter with square blocks
-        Bitmap pixelatedBitmap = ImageFilters.applyPixelateFilter(originalBitmap, blockSize, shape);
+        // Apply pixelate filter
+        currentFilteredBitmap = ImageFilters.applyPixelateFilter(originalBitmap, blockSize, shape);
 
         // Update image view
-        if (pixelatedBitmap != null) {
-            imageView.setImageBitmap(pixelatedBitmap);
+        if (currentFilteredBitmap != null) {
+            imageView.setImageBitmap(currentFilteredBitmap);
+        } else {
+            Toast.makeText(this, "Failed to apply pixelate filter", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * Set up the vignette controls and listeners
-     */
-    private void setupVignetteControls() {
-        // Initialize vignette controls if needed
-        if (vignetteControls == null) {
-            vignetteControls = findViewById(R.id.vignetteControls);
-        }
-
+    private void setupOilPaintControls() {
         // Show controls
-        vignetteControls.setVisibility(View.VISIBLE);
+        if (oilPaintControls != null) {
+            oilPaintControls.setVisibility(View.VISIBLE);
 
-        // Apply initial vignette effect
-        applyVignetteWithCurrentValues();
-
-        // Set up radius seekbar listener
-        if (seekRadius != null) {
-            seekRadius.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    updateRadiusDisplay(progress / 100.0f);
-                    if (fromUser) {
-                        applyVignetteWithCurrentValues();
-                    }
+            // Check if there's any selection already, if not set defaults
+            if (radiusGroup.getCheckedRadioButtonId() == -1) {
+                // Set default radius
+                RadioButton defaultRadius = findViewById(R.id.radius5);
+                if (defaultRadius != null) {
+                    defaultRadius.setChecked(true);
                 }
+            }
 
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-            });
-        }
-
-        // Set up strength seekbar listener
-        if (seekStrength != null) {
-            seekStrength.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    updateStrengthDisplay(progress / 100.0f);
-                    if (fromUser) {
-                        applyVignetteWithCurrentValues();
-                    }
+            if (intensityLevelsGroup.getCheckedRadioButtonId() == -1) {
+                // Set default intensity levels
+                RadioButton defaultIntensity = findViewById(R.id.intensity20);
+                if (defaultIntensity != null) {
+                    defaultIntensity.setChecked(true);
                 }
+            }
 
-                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-            });
+            // Apply oil paint with current selections
+            applyOilPaintWithSelectedParameters();
+        } else {
+            Toast.makeText(this, "Không tìm thấy oil paint controls trong layout", Toast.LENGTH_SHORT).show();
+            Log.e("FilterApp", "oilPaintControls is null. Make sure it's defined in your layout.");
         }
     }
 
-    /**
-     * Update the radius display with formatted value
-     */
-    private void updateRadiusDisplay(float radius) {
-        if (txtRadius != null) {
-            txtRadius.setText("Radius: " + String.format("%.2f", radius));
-        }
-    }
-
-    /**
-     * Update the strength display with formatted value
-     */
-    private void updateStrengthDisplay(float strength) {
-        if (txtStrength != null) {
-            txtStrength.setText("Strength: " + String.format("%.2f", strength));
-        }
-    }
-
-    /**
-     * Apply vignette filter with current seekbar values
-     */
-    private void applyVignetteWithCurrentValues() {
+    private void applyOilPaintWithSelectedParameters() {
         if (originalBitmap == null) return;
+        if (radiusGroup == null || intensityLevelsGroup == null) {
+            Log.e("FilterApp", "Radius or intensity levels group is null");
+            return;
+        }
 
-        // Get current values from seekbars
-        float radius = (seekRadius != null) ? seekRadius.getProgress() / 100.0f : 0.5f;
-        float strength = (seekStrength != null) ? seekStrength.getProgress() / 100.0f : 1.0f;
+        // Get selected radius
+        int radius = 5; // Default
+        int selectedId = radiusGroup.getCheckedRadioButtonId();
 
-        // Apply vignette filter
-        Bitmap filteredBitmap = ImageFilters.applyVignetteFilter(originalBitmap, radius, strength);
+        if (selectedId == R.id.radius3) {
+            radius = 3;
+        } else if (selectedId == R.id.radius5) {
+            radius = 5;
+        } else if (selectedId == R.id.radius7) {
+            radius = 7;
+        } else if (selectedId == R.id.radius10) {
+            radius = 10;
+        }
+
+        // Get selected intensity levels
+        int intensityLevels = 20; // Default
+        int selectedIntensityId = intensityLevelsGroup.getCheckedRadioButtonId();
+        if (selectedIntensityId == R.id.intensity10) {
+            intensityLevels = 10;
+        } else if (selectedIntensityId == R.id.intensity20) {
+            intensityLevels = 20;
+        } else if (selectedIntensityId == R.id.intensity30) {
+            intensityLevels = 30;
+        } else if (selectedIntensityId == R.id.intensity40) {
+            intensityLevels = 40;
+        }
+
+        // Apply oil paint filter
+        currentFilteredBitmap = ImageFilters.applyOilPaintFilter(originalBitmap, radius, intensityLevels);
 
         // Update image view
-        if (filteredBitmap != null) {
-            imageView.setImageBitmap(filteredBitmap);
+        if (currentFilteredBitmap != null) {
+            imageView.setImageBitmap(currentFilteredBitmap);
+        } else {
+            Toast.makeText(this, "Failed to apply oil paint filter", Toast.LENGTH_SHORT).show();
         }
     }
 }

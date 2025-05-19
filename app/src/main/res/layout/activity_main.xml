@@ -34,54 +34,20 @@
             android:text="Emboss" />
 
         <RadioButton
-            android:id="@+id/filterVignette"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Vignette" />
-        <RadioButton
             android:id="@+id/filterPixelate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Pixelate" />
+        <RadioButton
+            android:id="@+id/filterOilPaint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Oil Paint" />
+
     </RadioGroup>
 
-
     <LinearLayout
-        android:id="@+id/vignetteControls"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/txtRadius"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Radius: 0.5" />
-
-        <SeekBar
-            android:id="@+id/seekRadius"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="50" />
-
-        <TextView
-            android:id="@+id/txtStrength"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Strength: 1.0" />
-
-        <SeekBar
-            android:id="@+id/seekStrength"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="300"
-            android:progress="100" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/pixelateOptionsLayout"
+        android:id="@+id/pixelateControls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -166,13 +132,145 @@
         </RadioGroup>
     </LinearLayout>
 
-
-    <ImageButton
-        android:id="@+id/btnPickImage"
-        android:layout_width="wrap_content"
+    <!-- Oil Paint Controls -->
+    <LinearLayout
+        android:id="@+id/oilPaintControls"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp"
-        android:src="@android:drawable/ic_menu_gallery"
-        android:background="@android:color/transparent" />
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:padding="8dp">
+
+        <!-- Radius Control -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn bán kính:"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/radiusGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radius3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3" />
+
+            <RadioButton
+                android:id="@+id/radius5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5" />
+
+            <RadioButton
+                android:id="@+id/radius7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="7" />
+
+            <RadioButton
+                android:id="@+id/radius10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10" />
+        </RadioGroup>
+
+        <!-- Intensity Levels Control -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Chọn mức độ phân chia cường độ:"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/intensityLevelsGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/intensity10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10" />
+
+            <RadioButton
+                android:id="@+id/intensity20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="20" />
+
+            <RadioButton
+                android:id="@+id/intensity30"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30" />
+
+            <RadioButton
+                android:id="@+id/intensity40"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="40" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <!-- Button Container for Pick Image and Save Image buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="12dp">
+
+        <ImageButton
+            android:id="@+id/btnPickImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:background="@android:color/transparent"
+            android:layout_marginEnd="24dp" />
+
+        <ImageButton
+            android:id="@+id/btnSaveImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_save"
+            android:background="@android:color/transparent" />
+    </LinearLayout>
+
+    <!-- Save Options Container (Initially hidden) -->
+    <LinearLayout
+        android:id="@+id/saveOptionsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Options:"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <Button
+            android:id="@+id/btnSaveAsNew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save as new image"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnSaveReplacement"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Replace original image"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
 </LinearLayout>
